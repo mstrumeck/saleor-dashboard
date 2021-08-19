@@ -920,6 +920,11 @@ export enum ProductTypeEnum {
   SHIPPABLE = "SHIPPABLE",
 }
 
+export enum ProductTypeKindEnum {
+  GIFT_CARD = "GIFT_CARD",
+  NORMAL = "NORMAL",
+}
+
 export enum ProductTypeSortField {
   DIGITAL = "DIGITAL",
   NAME = "NAME",
@@ -1789,6 +1794,7 @@ export interface ProductTypeFilterInput {
 export interface ProductTypeInput {
   name?: string | null;
   slug?: string | null;
+  kind?: ProductTypeKindEnum | null;
   hasVariants?: boolean | null;
   productAttributes?: (string | null)[] | null;
   variantAttributes?: (string | null)[] | null;
