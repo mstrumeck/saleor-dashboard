@@ -2,7 +2,7 @@ import { ShopInfo_shop_countries } from "@saleor/components/Shop/types/ShopInfo"
 import { InvoiceFragment } from "@saleor/fragments/types/InvoiceFragment";
 import { OrderSettingsFragment } from "@saleor/fragments/types/OrderSettingsFragment";
 import { SearchCustomers_search_edges_node } from "@saleor/searches/types/SearchCustomers";
-import { warehouseList } from "@saleor/warehouses/fixtures";
+import { warehouseForPickup, warehouseList } from "@saleor/warehouses/fixtures";
 import { MessageDescriptor } from "react-intl";
 
 import { transformOrderStatus, transformPaymentStatus } from "../misc";
@@ -1298,7 +1298,8 @@ export const order = (placeholder: string): OrderDetails_order => ({
   },
   shippingMethod: null,
   shippingMethodName: "Registred priority",
-  collectionPointName: null,
+  collectionPointName: "Warehouse",
+  deliveryMethod: warehouseForPickup,
   shippingPrice: {
     __typename: "TaxedMoney",
     gross: {
@@ -1513,6 +1514,7 @@ export const draftOrder = (placeholder: string): OrderDetails_order => ({
   shippingMethod: null,
   shippingMethodName: null,
   collectionPointName: null,
+  deliveryMethod: null,
   shippingPrice: {
     __typename: "TaxedMoney" as "TaxedMoney",
     gross: {

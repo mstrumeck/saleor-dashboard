@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { OrderFulfillInput, OrderErrorCode, AddressTypeEnum, OrderDiscountType, DiscountValueTypeEnum, OrderEventsEmailsEnum, OrderEventsEnum, FulfillmentStatus, PaymentChargeStatusEnum, OrderStatus, OrderAction, JobStatusEnum } from "./../../types/globalTypes";
+import { OrderFulfillInput, OrderErrorCode, AddressTypeEnum, OrderDiscountType, DiscountValueTypeEnum, OrderEventsEmailsEnum, OrderEventsEnum, FulfillmentStatus, PaymentChargeStatusEnum, WarehouseClickAndCollectOptionEnum, OrderStatus, OrderAction, JobStatusEnum } from "./../../types/globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: FulfillOrder
@@ -351,6 +351,19 @@ export interface FulfillOrder_orderFulfill_order_shippingAddress {
   streetAddress2: string;
 }
 
+export interface FulfillOrder_orderFulfill_order_deliveryMethod_ShippingMethod {
+  __typename: "ShippingMethod";
+  id: string;
+}
+
+export interface FulfillOrder_orderFulfill_order_deliveryMethod_Warehouse {
+  __typename: "Warehouse";
+  id: string;
+  clickAndCollectOption: WarehouseClickAndCollectOptionEnum;
+}
+
+export type FulfillOrder_orderFulfill_order_deliveryMethod = FulfillOrder_orderFulfill_order_deliveryMethod_ShippingMethod | FulfillOrder_orderFulfill_order_deliveryMethod_Warehouse;
+
 export interface FulfillOrder_orderFulfill_order_shippingMethod {
   __typename: "ShippingMethod";
   id: string;
@@ -494,6 +507,7 @@ export interface FulfillOrder_orderFulfill_order {
   number: string | null;
   paymentStatus: PaymentChargeStatusEnum;
   shippingAddress: FulfillOrder_orderFulfill_order_shippingAddress | null;
+  deliveryMethod: FulfillOrder_orderFulfill_order_deliveryMethod | null;
   shippingMethod: FulfillOrder_orderFulfill_order_shippingMethod | null;
   shippingMethodName: string | null;
   collectionPointName: string | null;

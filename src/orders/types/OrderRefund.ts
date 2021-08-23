@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { OrderErrorCode, AddressTypeEnum, OrderDiscountType, DiscountValueTypeEnum, OrderEventsEmailsEnum, OrderEventsEnum, FulfillmentStatus, PaymentChargeStatusEnum, OrderStatus, OrderAction, JobStatusEnum } from "./../../types/globalTypes";
+import { OrderErrorCode, AddressTypeEnum, OrderDiscountType, DiscountValueTypeEnum, OrderEventsEmailsEnum, OrderEventsEnum, FulfillmentStatus, PaymentChargeStatusEnum, WarehouseClickAndCollectOptionEnum, OrderStatus, OrderAction, JobStatusEnum } from "./../../types/globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: OrderRefund
@@ -349,6 +349,19 @@ export interface OrderRefund_orderRefund_order_shippingAddress {
   streetAddress2: string;
 }
 
+export interface OrderRefund_orderRefund_order_deliveryMethod_ShippingMethod {
+  __typename: "ShippingMethod";
+  id: string;
+}
+
+export interface OrderRefund_orderRefund_order_deliveryMethod_Warehouse {
+  __typename: "Warehouse";
+  id: string;
+  clickAndCollectOption: WarehouseClickAndCollectOptionEnum;
+}
+
+export type OrderRefund_orderRefund_order_deliveryMethod = OrderRefund_orderRefund_order_deliveryMethod_ShippingMethod | OrderRefund_orderRefund_order_deliveryMethod_Warehouse;
+
 export interface OrderRefund_orderRefund_order_shippingMethod {
   __typename: "ShippingMethod";
   id: string;
@@ -492,6 +505,7 @@ export interface OrderRefund_orderRefund_order {
   number: string | null;
   paymentStatus: PaymentChargeStatusEnum;
   shippingAddress: OrderRefund_orderRefund_order_shippingAddress | null;
+  deliveryMethod: OrderRefund_orderRefund_order_deliveryMethod | null;
   shippingMethod: OrderRefund_orderRefund_order_shippingMethod | null;
   shippingMethodName: string | null;
   collectionPointName: string | null;
