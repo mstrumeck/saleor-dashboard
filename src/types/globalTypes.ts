@@ -1770,6 +1770,12 @@ export enum VoucherTypeEnum {
   SPECIFIC_PRODUCT = "SPECIFIC_PRODUCT",
 }
 
+export enum WarehouseClickAndCollectOptionEnum {
+  ALL = "ALL",
+  DISABLED = "DISABLED",
+  LOCAL = "LOCAL",
+}
+
 export enum WarehouseErrorCode {
   ALREADY_EXISTS = "ALREADY_EXISTS",
   GRAPHQL_ERROR = "GRAPHQL_ERROR",
@@ -1797,6 +1803,7 @@ export enum WebhookEventTypeEnum {
   CHECKOUT_UPDATED = "CHECKOUT_UPDATED",
   CUSTOMER_CREATED = "CUSTOMER_CREATED",
   CUSTOMER_UPDATED = "CUSTOMER_UPDATED",
+  FULFILLMENT_CANCELED = "FULFILLMENT_CANCELED",
   FULFILLMENT_CREATED = "FULFILLMENT_CREATED",
   INVOICE_DELETED = "INVOICE_DELETED",
   INVOICE_REQUESTED = "INVOICE_REQUESTED",
@@ -2007,6 +2014,7 @@ export interface ChannelCreateInput {
   name: string;
   slug: string;
   currencyCode: string;
+  defaultCountry: CountryCode;
   addShippingZones?: string[] | null;
 }
 
@@ -2018,6 +2026,7 @@ export interface ChannelUpdateInput {
   isActive?: boolean | null;
   name?: string | null;
   slug?: string | null;
+  defaultCountry?: CountryCode | null;
   addShippingZones?: string[] | null;
   removeShippingZones?: string[] | null;
 }
@@ -2141,7 +2150,7 @@ export interface ExportProductsInput {
 }
 
 export interface FulfillmentCancelInput {
-  warehouseId: string;
+  warehouseId?: string | null;
 }
 
 export interface FulfillmentUpdateTrackingInput {
@@ -2839,8 +2848,10 @@ export interface WarehouseCreateInput {
 }
 
 export interface WarehouseFilterInput {
+  clickAndCollectOption?: WarehouseClickAndCollectOptionEnum | null;
   search?: string | null;
   ids?: (string | null)[] | null;
+  isPrivate?: boolean | null;
 }
 
 export interface WarehouseSortingInput {
@@ -2853,6 +2864,8 @@ export interface WarehouseUpdateInput {
   email?: string | null;
   name?: string | null;
   address?: AddressInput | null;
+  clickAndCollectOption?: WarehouseClickAndCollectOptionEnum | null;
+  isPrivate?: boolean | null;
 }
 
 export interface WebhookCreateInput {

@@ -906,6 +906,7 @@ type Channel implements Node {
   slug: String!
   currencyCode: String!
   hasOrders: Boolean!
+  defaultCountry: CountryDisplay!
 }
 
 type ChannelActivate {
@@ -925,6 +926,7 @@ input ChannelCreateInput {
   name: String!
   slug: String!
   currencyCode: String!
+  defaultCountry: CountryCode!
   addShippingZones: [ID!]
 }
 
@@ -973,6 +975,7 @@ input ChannelUpdateInput {
   isActive: Boolean
   name: String
   slug: String
+  defaultCountry: CountryCode
   addShippingZones: [ID!]
   removeShippingZones: [ID!]
 }
@@ -994,13 +997,15 @@ type Checkout implements Node & ObjectWithMetadata {
   privateMetadata: [MetadataItem]!
   metadata: [MetadataItem]!
   availableShippingMethods: [ShippingMethod]!
+  availableCollectionPoints: [Warehouse!]!
   availablePaymentGateways: [PaymentGateway!]!
   email: String!
   isShippingRequired: Boolean!
   quantity: Int!
   lines: [CheckoutLine]
   shippingPrice: TaxedMoney
-  shippingMethod: ShippingMethod
+  shippingMethod: ShippingMethod @deprecated(reason: "Use delivery method instead")
+  deliveryMethod: DeliveryMethod
   subtotalPrice: TaxedMoney
   token: UUID!
   totalPrice: TaxedMoney
@@ -1066,6 +1071,11 @@ type CheckoutCustomerDetach {
   errors: [CheckoutError!]!
 }
 
+type CheckoutDeliveryMethodUpdate {
+  checkout: Checkout
+  errors: [CheckoutError!]!
+}
+
 type CheckoutEmailUpdate {
   checkout: Checkout
   checkoutErrors: [CheckoutError!]! @deprecated(reason: "Use errors field instead. This field will be removed in Saleor 4.0.")
@@ -1095,6 +1105,7 @@ enum CheckoutErrorCode {
   REQUIRED
   SHIPPING_ADDRESS_NOT_SET
   SHIPPING_METHOD_NOT_APPLICABLE
+  DELIVERY_METHOD_NOT_APPLICABLE
   SHIPPING_METHOD_NOT_SET
   SHIPPING_NOT_REQUIRED
   TAX_ERROR
@@ -1786,6 +1797,8 @@ type DeletePrivateMetadata {
   item: ObjectWithMetadata
 }
 
+union DeliveryMethod = Warehouse | ShippingMethod
+
 type DigitalContent implements Node & ObjectWithMetadata {
   useDefaultSettings: Boolean!
   automaticFulfillment: Boolean!
@@ -2159,7 +2172,7 @@ type FulfillmentCancel {
 }
 
 input FulfillmentCancelInput {
-  warehouseId: ID!
+  warehouseId: ID
 }
 
 type FulfillmentLine implements Node {
@@ -3702,7 +3715,7 @@ type Mutation {
   orderCapture(amount: PositiveDecimal!, id: ID!): OrderCapture
   orderConfirm(id: ID!): OrderConfirm
   orderFulfill(input: OrderFulfillInput!, order: ID): OrderFulfill
-  orderFulfillmentCancel(id: ID!, input: FulfillmentCancelInput!): FulfillmentCancel
+  orderFulfillmentCancel(id: ID!, input: FulfillmentCancelInput): FulfillmentCancel
   orderFulfillmentApprove(id: ID!, notifyCustomer: Boolean!): FulfillmentApprove
   orderFulfillmentUpdateTracking(id: ID!, input: FulfillmentUpdateTrackingInput!): FulfillmentUpdateTracking
   orderFulfillmentRefundProducts(input: OrderRefundProductsInput!, order: ID!): FulfillmentRefundProducts
@@ -3779,7 +3792,8 @@ type Mutation {
   checkoutRemovePromoCode(checkoutId: ID, promoCode: String!, token: UUID): CheckoutRemovePromoCode
   checkoutPaymentCreate(checkoutId: ID, input: PaymentInput!, token: UUID): CheckoutPaymentCreate
   checkoutShippingAddressUpdate(checkoutId: ID, shippingAddress: AddressInput!, token: UUID): CheckoutShippingAddressUpdate
-  checkoutShippingMethodUpdate(checkoutId: ID, shippingMethodId: ID!, token: UUID): CheckoutShippingMethodUpdate
+  checkoutShippingMethodUpdate(checkoutId: ID, shippingMethodId: ID!, token: UUID): CheckoutShippingMethodUpdate @deprecated(reason: "Will be removed in Saleor 4.0. Use `checkoutDeliveryMethodUpdate` instead")
+  checkoutDeliveryMethodUpdate(deliveryMethodId: ID, token: UUID): CheckoutDeliveryMethodUpdate
   checkoutLanguageCodeUpdate(checkoutId: ID, languageCode: LanguageCodeEnum!, token: UUID): CheckoutLanguageCodeUpdate
   channelCreate(input: ChannelCreateInput!): ChannelCreate
   channelUpdate(id: ID!, input: ChannelUpdateInput!): ChannelUpdate
@@ -3880,6 +3894,7 @@ type Order implements Node & ObjectWithMetadata {
   shippingAddress: Address
   shippingMethod: ShippingMethod
   shippingMethodName: String
+  collectionPointName: String
   channel: Channel!
   shippingPrice: TaxedMoney!
   shippingTaxRate: Float!
@@ -3896,6 +3911,7 @@ type Order implements Node & ObjectWithMetadata {
   lines: [OrderLine]!
   actions: [OrderAction]!
   availableShippingMethods: [ShippingMethod]
+  availableCollectionPoints: [Warehouse!]!
   invoices: [Invoice]
   number: String
   original: ID
@@ -3915,6 +3931,7 @@ type Order implements Node & ObjectWithMetadata {
   totalBalance: Money!
   userEmail: String
   isShippingRequired: Boolean!
+  deliveryMethod: DeliveryMethod
   languageCode: String! @deprecated(reason: "Use the `languageCodeEnum` field to fetch the language code. This field will be removed in Saleor 4.0.")
   languageCodeEnum: LanguageCodeEnum!
   discount: Money @deprecated(reason: "Use discounts field. This field will be removed in Saleor 4.0.")
@@ -6862,9 +6879,17 @@ type Warehouse implements Node & ObjectWithMetadata {
   shippingZones(before: String, after: String, first: Int, last: Int): ShippingZoneCountableConnection!
   address: Address!
   email: String!
+  isPrivate: Boolean!
   privateMetadata: [MetadataItem]!
   metadata: [MetadataItem]!
   companyName: String! @deprecated(reason: "Use address.CompanyName. This field will be removed in Saleor 4.0.")
+  clickAndCollectOption: WarehouseClickAndCollectOptionEnum!
+}
+
+enum WarehouseClickAndCollectOptionEnum {
+  DISABLED
+  LOCAL
+  ALL
 }
 
 type WarehouseCountableConnection {
@@ -6914,8 +6939,10 @@ enum WarehouseErrorCode {
 }
 
 input WarehouseFilterInput {
+  clickAndCollectOption: WarehouseClickAndCollectOptionEnum
   search: String
   ids: [ID]
+  isPrivate: Boolean
 }
 
 type WarehouseShippingZoneAssign {
@@ -6950,6 +6977,8 @@ input WarehouseUpdateInput {
   email: String
   name: String
   address: AddressInput
+  clickAndCollectOption: WarehouseClickAndCollectOptionEnum
+  isPrivate: Boolean
 }
 
 type Webhook implements Node {
@@ -7024,6 +7053,7 @@ enum WebhookEventTypeEnum {
   CHECKOUT_CREATED
   CHECKOUT_UPDATED
   FULFILLMENT_CREATED
+  FULFILLMENT_CANCELED
   NOTIFY_USER
   PAGE_CREATED
   PAGE_UPDATED
@@ -7060,6 +7090,7 @@ enum WebhookSampleEventTypeEnum {
   CHECKOUT_CREATED
   CHECKOUT_UPDATED
   FULFILLMENT_CREATED
+  FULFILLMENT_CANCELED
   NOTIFY_USER
   PAGE_CREATED
   PAGE_UPDATED
